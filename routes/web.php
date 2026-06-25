@@ -23,9 +23,13 @@ Route::get('/', [HomeController::class, 'index'])->name('home');
 
 Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
 
-Route::get('/checkout/{event}', [EventController::class, 'checkout'])->name('checkout');
+//Route::get('/checkout/{event}', [EventController::class, 'checkout'])->name('checkout');
+Route::get('/checkout/{event}',[App\Http\Controllers\CheckoutController::class, 'create'])->name('checkout.create');
 
 Route::get('/my-ticket', [EventController::class, 'ticket'])->name('ticket');
+
+//Route::get('/checkout/{event}/create', [App\Http\Controllers\CheckoutController::class, 'create'])->name('checkout.create');
+Route::post('/checkout/{event}', [App\Http\Controllers\CheckoutController::class, 'store'])->name('checkout.store');
 
 
 // ================= ADMIN AREA =================
@@ -52,7 +56,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::delete('/events/{event}', [AdminEventController::class, 'destroy'])->name('events.destroy');
 
         // Transactions
-        Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
+        // Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions');
 
         // Categories
         Route::get('/categories', [CategoryController::class, 'index'])->name('categories');
@@ -69,6 +73,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/partners/edit/{id}', [PartnerController::class, 'edit'])->name('partners.edit');
         Route::post('/partners/update/{id}', [PartnerController::class, 'update'])->name('partners.update');
         Route::get('/partners/delete/{id}', [PartnerController::class, 'delete'])->name('partners.delete');
+
+        // transaksi p10
+        Route::get('transactions', [\App\Http\Controllers\Admin\TransactionController::class, 'index'])->name('transactions');
     });
 
 });
