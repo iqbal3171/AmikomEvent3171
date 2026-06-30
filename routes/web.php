@@ -31,6 +31,10 @@ Route::get('/my-ticket', [EventController::class, 'ticket'])->name('ticket');
 //Route::get('/checkout/{event}/create', [App\Http\Controllers\CheckoutController::class, 'create'])->name('checkout.create');
 Route::post('/checkout/{event}', [App\Http\Controllers\CheckoutController::class, 'store'])->name('checkout.store');
 
+Route::get('/paymment/{order_id}', [App\Http\Controllers\CheckoutController::class, 'payment'])->name('checkout.payment');
+
+Route::get('/success/{order_id}', [App\Http\Controllers\CheckoutController::class, 'success'])->name('checkout.success');
+
 
 // ================= ADMIN AREA =================
 Route::prefix('admin')->name('admin.')->group(function () {

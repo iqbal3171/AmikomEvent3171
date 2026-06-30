@@ -40,6 +40,69 @@ class CheckoutController extends Controller
             'status' => 'pending',
         ]);
 
-        return redirect('/');
+        \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+        \Midtrans\Config::$isProduction = false; // Set to true for production
+        \Midtrans\Config::$isSanitized = true;
+        \Midtrans\Config::$is3ds = true;
+
+        $params = [
+            'transaction_details' => [
+                'order_id' => $orderId,
+                'gross_amount' => $totalPrice,
+            ],
+            'customer_details' => [
+                'first_name' => $request->customer_name,
+                'email' => $request->customer_email,
+                'phone' => $request->customer_phone,
+            ],
+        ];
+        try {
+            $snapToken = \Midtrans\Snap::getSnapToken($params);
+
+        $transaction->update(['snap_token' => $snapToken]);
+
+        return redirect()->route('checkout.payment', $transaction->order_id);
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal memproses pembayaran jaringan: ' . $e->getMessage());
+        }
+
     }
+
+    public function payment($order_Id)
+    {
+        $categories = \App\Models\Category::all();
+
+        $transaction = Transaction::with('event')->where('order_id', $order_Id)->firstOrFail();
+        return view('checkout.payment', compact('transaction', 'categories'));
+    }
+
+    public function success($order_id)
+{
+    // Mengambil daftar kategori
+    $categories = \App\Models\Category::all();
+
+    $transaction = Transaction::where('order_id', $order_id)
+        ->firstOrFail();
+
+    // Validasi status pembayaran dari Midtrans
+    \Midtrans\Config::$serverKey = env('MIDTRANS_SERVER_KEY');
+    \Midtrans\Config::$isProduction = false;
+
+    try {
+        $midtransStatus = \Midtrans\Transaction::status($order_id);
+
+        if (in_array($midtransStatus->transaction_status, ['capture', 'settlement'])) {
+            $transaction->update([
+                'status' => 'success'
+            ]);
+        }
+
+    } catch (\Exception $e) {
+
+        return redirect()->route('home')
+            ->with('error', 'Transaksi tidak ditemukan atau gagal diproses.');
+    }
+
+    return view('checkout.success', compact('transaction', 'categories'));
+}
 }
