@@ -17,6 +17,9 @@ use App\Http\Controllers\Controller;
 use App\Models\Partner;
 use App\Http\Controllers\Admin\PartnerController;
 
+// ================ MIDTRANS WEBHOOK =================
+Route::post('/midtrans/callback', [App\Http\Controllers\MidtransWebhookController::class, 'handle']);
+
 
 // ================= USER AREA =================
 Route::get('/', [HomeController::class, 'index'])->name('home');
