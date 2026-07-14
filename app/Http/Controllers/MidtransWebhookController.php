@@ -49,9 +49,17 @@ class MidtransWebhookController extends Controller
     {
         // Update the event's available tickets
         $event = $transaction->event;
-        if ($event) {
-            $event->available_tickets -= $transaction->quantity;
+        if ($event && $event->stock > 0) {
+            $event->stock - 1;
             $event->save();
+
+            try {
+                \Illuminate\Support\Facades\Mail::to($transaction->customer_email)->send(new\App\Mail\EventTicketMail($transaction));
+            } catch (\Exception $e) {
+                \Log::error('Gagal mengirim email E-Ticket: ' . $e->getMessage());
+            }
+        } else {
+            \Log::warning('Stock habis setelah pembayaran berhasil(Perlu proses refund opsional). Order: ' . $transaction->order_id);
         }
     }
 }
